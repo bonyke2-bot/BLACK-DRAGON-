@@ -91,12 +91,7 @@ const COMMAND_CATEGORIES = {
         'getpp', 'lastseen', 'drop', 'getgcprofile', 'getgcname',
         'staff', 'creategroup'
     ],
-    'AI MENU': [
-        'ai', 'gpt', 'gemini', 'copilot', 'deepseek', 'meta', 'metai',
-        'vision', 'analyse', 'ilama', 'wormgpt', 'birdai', 'blackbox',
-        'perplexity', 'mistral', 'grok', 'speechwrite',
-        'imagine', 'flux', 'dalle', 'sora', 'magicstudio', 'remini', 'gptedit'
-    ],
+
     'DOWNLOADER': [
         'play', 'song', 'video', 'ytplay', 'ytv', 'ytaudio', 'ytvideo',
         'ytdocplay', 'ytdocvideo', 'spotify',
@@ -117,10 +112,7 @@ const COMMAND_CATEGORIES = {
         'sticker', 'stickercrop', 'tgsticker', 'take', 'attp', 'emojimix',
         'meme', 'smeme', 'blur', 'removebg', 'nobg', 'crop', 'simage', 'toimage'
     ],
-    'CONVERTER': [
-        'totext', 'toimage', 'toaudio', 'tomp3', 'toppt', 'tourl',
-        'tovoicenote', 'trim', 'tts'
-    ],
+
     'GAME MENU': [
         'tictactoe', 'connect4', 'hangman', 'trivia', 'answer',
         'truth', 'dare', '8ball', 'cf', 'scramble', 'bet'
@@ -134,25 +126,12 @@ const COMMAND_CATEGORIES = {
         'neko', 'waifu', 'loli', 'nom', 'poke', 'cry',
         'kiss', 'pat', 'hug', 'wink', 'facepalm', 'anime', 'animu'
     ],
-    'TEXT MAKER': [
-        'metallic', 'ice', 'snow', 'impressive', 'matrix', 'light',
-        'neon', 'devil', 'purple', 'thunder', 'leaves', '1917',
-        'arena', 'hacker', 'sand', 'blackpink', 'glitch', 'fire'
-    ],
-    'IMG EDIT': [
-        'heart', 'horny', 'circle', 'lgbt', 'lolice',
-        'namecard', 'tweet', 'ytcomment', 'comrade',
-        'gay', 'glass', 'jail', 'passed', 'triggered'
-    ],
+
+
     'STATUS MENU': [
         'tostatus', 'savestatus', 'togroupstatus'
     ],
-    'SPORTS MENU': [
-        'livescore', 'bettips', 'fnews',
-        'player', 'team', 'venue', 'gameevents',
-        'epl', 'laliga', 'ucl', 'bundesliga',
-        'seriea', 'euros', 'fifa'
-    ],
+
     'GITHUB': [
         'git', 'github', 'sc', 'script', 'repo', 'clone'
     ]

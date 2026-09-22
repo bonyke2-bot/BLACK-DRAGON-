@@ -37,16 +37,6 @@ async function menuCommand(sock, chatId, message) {
 ┃ .spotify
 ╰━━━━━━━━━━━━━━⬣
 
-╭━━〔 AI MENU 〕━━⬣
-┃ .ai
-┃ .gpt4
-┃ .deepseek
-┃ .copilot
-┃ .grok
-┃ .blackbox
-┃ .vision
-╰━━━━━━━━━━━━━━⬣
-
 ╭━━〔 GROUP MENU 〕━━⬣
 ┃ .tagall
 ┃ .hidetag

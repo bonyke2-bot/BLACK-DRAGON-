@@ -107,11 +107,6 @@ const generateMenu = (pushname, currentMode, hostName, ping, uptimeFormatted, pr
     menu += `┃ .promote\n┃ .demote\n┃ .settings\n┃ .welcome\n┃ .setgpp\n┃ .getgpp\n┃ .listadmin\n┃ .goodbye\n┃ .tagnoadmin\n┃ .tag\n┃ .antilink\n┃ .set welcome\n┃ .listadmin\n┃ .groupinfo\n┃ .admins\n┃ .warn\n┃ .revoke\n┃ .resetlink\n┃ .open\n┃ .close\n┃ .mention\n`;
     menu += `┗❐\n\n`;
 
-    // AI Menu
-    menu += `┏❐ \`AI MENU\` ❐\n`;
-    menu += `┃ .Ai\n┃ .gpt\n┃ .gemini\n┃ .imagine\n┃ .flux\n`;
-    menu += `┗❐\n\n`;
-
     // Setting Menu
     menu += `┏❐ \`SETTING MENU\` ❐\n`;
     menu += `┃ .mode\n┃ .autostatus\n┃ .pmblock\n┃ .setmention\n┃ .autoread\n┃ .clearsession\n┃ .antidelete\n┃ .cleartmp\n┃ .autoreact\n┃ .getpp\n┃ .setpp\n┃ .sudo\n┃ .autotyping\n┃ .setmenu\n┃ .setprefix\n`;
@@ -146,16 +141,6 @@ const generateMenu = (pushname, currentMode, hostName, ping, uptimeFormatted, pr
     menu += `┏❐ \`ANIME MENU\` ❐\n`;
     menu += `┃ .neko\n┃ .waifu\n┃ .loli\n┃ .nom\n┃ .poke\n┃ .cry\n┃ .kiss\n┃ .pat\n┃ .hug\n┃ .wink\n┃ .facepalm\n`;
     menu += `┗❐\n\n`;
-
-    // Text Maker Menu
-    menu += `┏❐ \`TEXT MAKER MENU\` ❐\n`;
-    menu += `┃ .metallic\n┃ .ice\n┃ .snow\n┃ .impressive\n┃ .matrix\n┃ .light\n┃ .neon\n┃ .devil\n┃ .purple\n┃ .thunder\n┃ .leaves\n┃ .1917\n┃ .arena\n┃ .hacker\n┃ .sand\n┃ .blackpink\n┃ .glitch\n┃ .fire\n`;
-    menu += `┗❐\n\n`;
-
-    // Image Edit Menu
-    menu += `┏❐ \`IMG EDIT\` ❐\n`;
-    menu += `┃ .heart\n┃ .horny\n┃ .circle\n┃ .lgbt\n┃ .lolice\n┃ .stupid\n┃ .namecard\n┃ .tweet\n┃ .ytcomment\n┃ .comrade\n┃ .gay\n┃ .glass\n┃ .jail\n┃ .passed\n┃ .triggered\n`;
-    menu += `┗❐\n`;
 
     return menu;
 };
