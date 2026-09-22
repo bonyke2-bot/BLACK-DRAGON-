@@ -1,0 +1,22 @@
+{
+  "users": [],
+  "groups": [],
+  "antilink": {},
+  "antibadword": {},
+  "warnings": {},
+  "sudo": [],
+  "welcome": false,
+  "goodbye": {},
+  "chatbot": {},
+  "autoReaction": {
+    "enabled": false,
+    "customReactions": [
+      "💞",
+      "💘",
+      "🥰",
+      "💙",
+      "💓",
+      "💕"
+    ]
+  }
+}
