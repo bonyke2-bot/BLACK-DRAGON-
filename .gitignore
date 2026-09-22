@@ -22,3 +22,11 @@
  *.njsproj
  *.sln
  *.sw?
+
+# Bot runtime stores
+Database/
+baileys_store.json
+message_backup.json
+
+node_modules/**
+session/**
