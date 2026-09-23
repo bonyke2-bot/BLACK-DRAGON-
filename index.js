@@ -345,6 +345,7 @@ async function getLoginMethod() {
 
         global.SESSION_ID = sessionId;
         await saveLoginMethod('session');
+        if (rl) rl.close();
         return 'session';
     }
 
