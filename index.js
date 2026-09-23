@@ -336,7 +336,8 @@ async function getLoginMethod() {
             log('│        BONY-XMD              │', 'cyan');
             log('│     Session Required         │', 'cyan');
             log('╰──────────────────────────────╯', 'cyan');
-            sessionId = (await question('Enter your BONY-XMD session ID: ')).trim();
+            process.stdout.write('Enter your BONY-XMD session ID: ');
+            sessionId = (await question('')).trim();
 
             if (!isValidSessionId(sessionId)) {
                 log(`Invalid Session ID. It must start with "${SESSION_PREFIX}"`, 'red');
