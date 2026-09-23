@@ -181,7 +181,7 @@ global.themeemoji = '•';
 
 // ── Readline ───────────────────────────────────────────────────────────────────
 
-const rl       = process.stdin.isTTY
+const rl       = process.stdin.isTTY || process.env.P_SERVER_UUID
     ? readline.createInterface({ input: process.stdin, output: process.stdout })
     : null;
 const question = (text) =>
@@ -217,8 +217,12 @@ function sessionExists() {
 //   • Detection is case-sensitive to avoid false matches
 
 function getRawSessionId() {
-    // Trim whitespace and any stray quotes that hosting panels sometimes add
-    return (process.env.SESSION_ID || '').trim().replace(/^["']|["']$/g, '');
+    // Prefer hosting environment, then local SESSION_ID file for hosts without env controls
+    let value = process.env.SESSION_ID || '';
+    if (!value && fs.existsSync('./SESSION_ID')) {
+        value = fs.readFileSync('./SESSION_ID', 'utf8');
+    }
+    return value.trim().replace(/^["']|["']$/g, '');
 }
 
 function isValidSessionId(id) {
@@ -321,6 +325,27 @@ async function getLoginMethod() {
     if (!sessionExists() && fs.existsSync(loginFile)) {
         log('Session missing — removing stale login preference.', 'blue');
         fs.unlinkSync(loginFile);
+    }
+
+    // Pterodactyl can provide console input even when stdin is not detected as a TTY.
+    // Keep the existing non-interactive behavior for other hosting platforms.
+    if (!process.stdin.isTTY && process.env.P_SERVER_UUID) {
+        let sessionId = '';
+        while (!isValidSessionId(sessionId)) {
+            log('╭──────────────────────────────╮', 'cyan');
+            log('│        BONY-XMD              │', 'cyan');
+            log('│     Session Required         │', 'cyan');
+            log('╰──────────────────────────────╯', 'cyan');
+            sessionId = (await question('Enter your BONY-XMD session ID: ')).trim();
+
+            if (!isValidSessionId(sessionId)) {
+                log(`Invalid Session ID. It must start with "${SESSION_PREFIX}"`, 'red');
+            }
+        }
+
+        global.SESSION_ID = sessionId;
+        await saveLoginMethod('session');
+        return 'session';
     }
 
     // Non-TTY environments (Heroku dynos, Render, etc.) can't do interactive login
