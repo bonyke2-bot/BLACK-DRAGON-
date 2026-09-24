@@ -7,6 +7,7 @@ const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { Jimp, ResizeStrategy } = require('jimp');
 const { getMenuStyle, getMenuSettings, MENU_STYLES } = require('./menuSettings');
 const { generateWAMessageFromContent } = require('@whiskeysockets/baileys');
 const { getPrefix, handleSetPrefixCommand } = require('./setprefix');
@@ -65,6 +66,87 @@ const progressBar = (used, total, size = 10) => {
     let bar = '█'.repeat(percentage) + '░'.repeat(size - percentage);
     return `${bar} ${Math.round((used / total) * 100)}%`;
 };
+
+const menuReplyHandlers = new Map();
+
+const CATEGORY_EMOJIS = {
+    'OWNER MENU': '👑',
+    'GROUP ADMIN': '👥',
+    'GROUP TOOLS': '🛠️',
+    'DOWNLOADER': '📥',
+    'SEARCH & TOOLS': '🔎',
+    'STICKER MENU': '🎨',
+    'GAME MENU': '🎮',
+    'FUN & SOCIAL': '😂',
+    'ANIME MENU': '🏮',
+    'STATUS MENU': '📱',
+    'GITHUB': '🐙'
+};
+
+function generateCategoryMenu(category) {
+    const commands = COMMAND_CATEGORIES[category] || [];
+    const emoji = CATEGORY_EMOJIS[category] || '📂';
+
+    let menu = `${emoji} *BONY XMD — ${category}*\n\n`;
+
+    commands.forEach(command => {
+        menu += `➤ .${command}\n\n`;
+    });
+
+    menu += `↩️ Reply *menu* to return`;
+
+    return menu;
+}
+
+function registerMenuMessage(messageKey, type = 'main') {
+    if (messageKey?.id) {
+        menuReplyHandlers.set(messageKey.id, { type });
+    }
+}
+
+async function handleMenuReply(sock, message) {
+    const contextInfo = message.message?.extendedTextMessage?.contextInfo;
+    const stanzaId = contextInfo?.stanzaId;
+
+    if (!stanzaId || !menuReplyHandlers.has(stanzaId)) {
+        return false;
+    }
+
+    const handler = menuReplyHandlers.get(stanzaId);
+    const body = message.message?.conversation ||
+        message.message?.extendedTextMessage?.text ||
+        '';
+
+    const text = body.trim().toLowerCase();
+    const chatId = message.key.remoteJid;
+
+    if (handler.type === 'main' && /^\d+$/.test(text)) {
+        const categoryIndex = parseInt(text, 10) - 1;
+        const categories = Object.keys(COMMAND_CATEGORIES);
+
+        if (categoryIndex >= 0 && categoryIndex < categories.length) {
+            const category = categories[categoryIndex];
+            const sent = await sock.sendMessage(chatId, {
+                text: generateCategoryMenu(category)
+            }, { quoted: createFakeContact(message) });
+
+            registerMenuMessage(sent?.key, 'category');
+            return true;
+        }
+    }
+
+    if (handler.type === 'category' && text === 'menu') {
+        const sent = await sock.sendMessage(chatId, {
+            image: { url: "https://i.ibb.co/xqfJYpgc/IMG-20260924-WA1075.jpg" },
+            caption: generateMenu()
+        }, { quoted: createFakeContact(message) });
+
+        registerMenuMessage(sent?.key, 'main');
+        return true;
+    }
+
+    return false;
+}
 
 const COMMAND_CATEGORIES = {
     'OWNER MENU': [
@@ -137,50 +219,17 @@ const COMMAND_CATEGORIES = {
     ]
 };
 
-const generateMenu = (pushname, currentMode, hostName, ping, uptimeFormatted, prefix = '.') => {
-    const memoryUsage = process.memoryUsage();
-    const botUsedMemory = memoryUsage.heapUsed;
-    const totalMemory = os.totalmem();
-    const systemUsedMemory = totalMemory - os.freemem();
-    const prefix2 = getPrefix();
-    const bot = getBotName();
-    let newOwner = getOwnerName();
-    const menuSettings = getMenuSettings();
+const generateMenu = () => {
+    let menu = `🌐 BONY XMD MENU 🌐\n\n`;
+    menu += `Reply with category number:\n\n`;
 
-    let menu = `┏━━❐✧ ${bot} ✧❐\n`;
-    menu += `┃✦ Prefix: [${prefix2}]\n`;
-    menu += `┃✦ Owner: ${newOwner}\n`;
-    menu += `┃✦ Mode: ${currentMode}\n`;
-    menu += `┃✦ Platform: ${hostName}\n`;
-    menu += `┃✦ Speed: ${ping} ms\n`;
+    const categories = Object.keys(COMMAND_CATEGORIES);
 
-    if (menuSettings.showUptime) {
-        menu += `┃✦ Uptime: ${uptimeFormatted}\n`;
-    }
+    categories.forEach((category, index) => {
+        menu += `${index + 1} ➤ ${category}\n\n`;
+    });
 
-    menu += `┃✦ Version: v${settings.version}\n`;
-
-    if (menuSettings.showMemory) {
-        menu += `┃✦ Usage: ${formatMemory(botUsedMemory)} of ${formatMemory(totalMemory)}\n`;
-        menu += `┃✦ RAM: [${progressBar(systemUsedMemory, totalMemory)}]\n`;
-    }
-
-    menu += `┗❐\n${readmore}\n`;
-
-    let sectionIndex = 0;
-    for (const [category, commands] of Object.entries(COMMAND_CATEGORIES)) {
-        menu += `┏━━❐ \`${category}\` ❐\n`;
-        for (const cmd of commands) {
-            menu += `┃ ✧ ${cmd}\n`;
-        }
-        menu += `┗❐\n`;
-        sectionIndex++;
-        if (sectionIndex % 3 === 0) {
-            menu += `${readmore}\n`;
-        } else {
-            menu += `\n`;
-        }
-    }
+    menu += `Send number (1-${categories.length})`;
 
     return menu;
 };
@@ -194,7 +243,11 @@ async function loadThumbnail(thumbnailPath) {
                 const fetch = require('node-fetch');
                 const response = await fetch(thumbnailPath);
                 if (response.ok) {
-                    return Buffer.from(await response.arrayBuffer());
+                    const imageBuffer = Buffer.from(await response.arrayBuffer());
+                    const image = await Jimp.read(imageBuffer);
+                    return await image
+                        .resize({ w: 32, mode: ResizeStrategy.BILINEAR })
+                        .getBuffer('image/jpeg', { quality: 50 });
                 }
             } catch (urlError) {
                 console.error('URL thumbnail fetch failed:', urlError.message);
@@ -246,8 +299,10 @@ async function sendMenuWithStyle(sock, chatId, message, menulist, menustyle, thu
             },
         }, { quoted: createFakeContact(message) });
     } else if (menustyle === '2') {
-        await sock.sendMessage(chatId, {
-            text: menulist
+        return await sock.sendMessage(chatId, {
+            image: { url: "https://i.ibb.co/xqfJYpgc/IMG-20260924-WA1075.jpg" },
+            caption: menulist,
+            jpegThumbnail: thumbnailBuffer.toString('base64')
         }, { quoted: createFakeContact(message) });
     } else if (menustyle === '3') {
         await sock.sendMessage(chatId, {
@@ -327,12 +382,7 @@ async function helpCommand(sock, chatId, message) {
     // Create fake contact for enhanced reply
     const fkontak = createFakeContact(message);
 
-    const start = Date.now();
-    await sock.sendMessage(chatId, {
-        text: '_Wait loading Menu..._'
-    }, { quoted: createFakeContact(message) });
-    const end = Date.now();
-    const ping = Math.round((end - start) / 2);
+    const ping = 0;
 
     // Send opening reaction
     await sock.sendMessage(chatId, {
@@ -380,15 +430,27 @@ async function helpCommand(sock, chatId, message) {
         const thumbnailBuffer = await loadThumbnail(thumbnailPath);
 
         // Send menu using BONY-XMD menu style function
-        await sendMenuWithStyle(sock, chatId, message, menulist, menuStyle, thumbnailBuffer, pushname);
+        const sentMenu = await sendMenuWithStyle(
+            sock,
+            chatId,
+            message,
+            menulist,
+            menuStyle,
+            thumbnailBuffer,
+            pushname
+        );
+
+        registerMenuMessage(sentMenu?.key, 'main');
 
     } catch (error) {
         console.error('Error in help command:', error);
         // Fallback to simple text
         try {
-            await sock.sendMessage(chatId, {
+            const sentMenu = await sock.sendMessage(chatId, {
                 text: menulist
             }, { quoted: createFakeContact(message) });
+
+            registerMenuMessage(sentMenu?.key, 'main');
         } catch (fallbackError) {
             console.error('Even fallback failed:', fallbackError);
         }
@@ -396,3 +458,4 @@ async function helpCommand(sock, chatId, message) {
 }
 
 module.exports = helpCommand;
+module.exports.handleMenuReply = handleMenuReply;

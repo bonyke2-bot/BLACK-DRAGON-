@@ -296,12 +296,14 @@ async function storeMessage(sock, message) {
 
         const messageId = message.key.id;
         const sender = message.key.participant || message.key.remoteJid;
+        const senderPhone = message.key.participantPn || message.key.senderPn || global.lidPhoneMap?.get(message.key.id) || null;
 
         const storedMessage = {
             content: '',
             mediaType: '',
             mediaPath: '',
             sender,
+            senderPhone,
             chatId,
             group: chatId.endsWith('@g.us') ? chatId : null,
             timestamp: Date.now(),
@@ -585,7 +587,7 @@ async function sendDeletionNotification(sock, original, deletedBy, targets) {
         let text = `*🗑️ ANTIDELETE REPORT 🗑️*\n\n` +
             `*🗑️ Deleted By:* @${deleterName}\n` +
             `*👤 Sender:* @${senderName}\n` +
-            `*📱 Number:* ${original.sender}\n` +
+            `*📱 Number:* ${(original.senderPhone || original.sender).split('@')[0].split(':')[0]}\n` +
             `*🕒 Time:* ${time}\n`;
 
         if (groupName) {
@@ -639,19 +641,19 @@ async function sendMediaNotification(sock, original, targets) {
                     await sock.sendMessage(target, {
                         image: { url: original.mediaPath },
                         ...mediaOptions
-                    }, { quoted: createFakeContact(message) });
+                    });
                     break;
                 case 'sticker':
                     await sock.sendMessage(target, {
                         sticker: { url: original.mediaPath },
                         ...mediaOptions
-                    }, { quoted: createFakeContact(message) });
+                    });
                     break;
                 case 'video':
                     await sock.sendMessage(target, {
                         video: { url: original.mediaPath },
                         ...mediaOptions
-                    }, { quoted: createFakeContact(message) });
+                    });
                     break;
                 case 'audio':
                     await sock.sendMessage(target, {
@@ -659,14 +661,14 @@ async function sendMediaNotification(sock, original, targets) {
                         mimetype: 'audio/mpeg',
                         ptt: false,
                         ...mediaOptions
-                    }, { quoted: createFakeContact(message) });
+                    });
                     break;
                 case 'document':
                     await sock.sendMessage(target, {
                         document: { url: original.mediaPath },
                         fileName: path.basename(original.mediaPath),
                         ...mediaOptions
-                    }, { quoted: createFakeContact(message) });
+                    });
                     break;
             }
         } catch (err) {

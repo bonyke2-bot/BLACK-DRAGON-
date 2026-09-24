@@ -66,6 +66,7 @@ const SESSION_PREFIX = 'BONY-XMD:~';
 const MESSAGE_STORE_FILE = path.join(__dirname, 'message_backup.json');
 const SESSION_ERROR_FILE = path.join(__dirname, 'sessionErrorCount.json');
 global.messageBackup = {};
+global.lidPhoneMap = new Map();
 
 function loadStoredMessages() {
     try {
@@ -537,7 +538,21 @@ async function startXeonBotInc() {
 
     const XeonBotInc = makeWASocket({
         version,
-        logger: pino({ level: 'info' }),
+        logger: pino({
+            level: 'info',
+            hooks: {
+                logMethod(inputArgs, method) {
+                    const first = inputArgs[0];
+                    if (first?.msgAttrs?.id && first?.msgAttrs?.peer_recipient_pn) {
+                        global.lidPhoneMap.set(
+                            first.msgAttrs.id,
+                            first.msgAttrs.peer_recipient_pn.split('@')[0]
+                        );
+                    }
+                    method.apply(this, inputArgs);
+                }
+            }
+        }),
         printQRInTerminal: false,
         browser: ['Ubuntu', 'Chrome', '20.0.04'],
         auth: {

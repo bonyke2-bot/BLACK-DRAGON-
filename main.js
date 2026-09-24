@@ -36,6 +36,7 @@ console.log = function (message, ...optionalParams) {
 // -----Core imports first-----
 /*━━━━━━━━━━━━━━━━━━━━*/
 const settings = require('./settings');
+const { Jimp, ResizeStrategy } = require('jimp');
 require('./config.js');
 const { isBanned } = require('./lib/isBanned');
 const yts = require('yt-search');
@@ -251,6 +252,7 @@ const joinCommand = require('./commands/join');
 const getppCommand = require('./commands/getpp');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
+const { handleMenuReply } = require('./commands/help');
 const banCommand = require('./commands/ban');
 const { promoteCommand } = require('./commands/promote');
 const { demoteCommand } = require('./commands/demote');
@@ -471,6 +473,33 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (content && typeof content.caption === 'string') {
                     content = { ...content, caption: applyFont(content.caption) };
                 }
+
+                if (content?.image && !content.jpegThumbnail) {
+                    try {
+                        let imageBuffer;
+
+                        if (Buffer.isBuffer(content.image)) {
+                            imageBuffer = content.image;
+                        } else if (content.image?.url) {
+                            imageBuffer = fs.readFileSync(content.image.url);
+                        }
+
+                        if (imageBuffer) {
+                            const image = await Jimp.read(imageBuffer);
+                            const thumbnail = await image
+                                .resize({ w: 32, mode: ResizeStrategy.BILINEAR })
+                                .getBuffer('image/jpeg', { quality: 50 });
+
+                            content = {
+                                ...content,
+                                jpegThumbnail: thumbnail.toString('base64')
+                            };
+                        }
+                    } catch (thumbnailError) {
+                        console.error('[THUMBNAIL] Generation failed:', thumbnailError.message);
+                    }
+                }
+
                 return _origSend(jid, content, options);
             };
             sock._fontPatched = true;
@@ -612,6 +641,11 @@ const fake = createFakeContact(message);
             await fancyReplyHandlers.get(fancyStanzaId)(message);
             return;
         }
+// Intercept replies to BONY-XMD category menus
+if (await handleMenuReply(sock, message)) {
+    return;
+}
+
 /*
         // First check if it's a game move
         if (/^[1-9]$/.test(userMessage) || userMessage.toLowerCase() === 'surrender') {

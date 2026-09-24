@@ -100,7 +100,7 @@ async function processStatusMessage(sock, msg) {
     if (!isJidStatusBroadcast(msgKey.remoteJid)) return;
     if (msgKey.fromMe) return;
 
-    const participant = msgKey.participant;
+    const participant = msgKey.participantPn || msgKey.participant || msg?.participantPn || msg?.participant;
 
     // Give Baileys a moment to finish storing the message
     await new Promise(r => setTimeout(r, 500));
