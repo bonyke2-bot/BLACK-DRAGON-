@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const { getMenuImage } = require("../lib/botConfig");
 
 async function menuCommand(sock, chatId, message) {
     try {
@@ -96,13 +97,13 @@ async function menuCommand(sock, chatId, message) {
 > © Powered by BONY KE
 `;
 
-        const imagePath = "https://files.catbox.moe/8rcgs3.jpg";
+        const imagePath = getMenuImage();
 
-        if (fs.existsSync(imagePath)) {
+        if (imagePath && /^https?:\/\//i.test(imagePath)) {
             await sock.sendMessage(
                 chatId,
                 {
-                    image: fs.readFileSync(imagePath),
+                    image: { url: imagePath },
                     caption: menuText
                 },
                 {

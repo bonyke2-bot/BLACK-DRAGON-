@@ -1,7 +1,12 @@
 var { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 var { exec } = require('child_process');
 var fs = require('fs');
-const ffmpeg = require('ffmpeg-static');
+let ffmpeg;
+try {
+  ffmpeg = require('ffmpeg-static');
+} catch {
+  ffmpeg = 'ffmpeg';
+}
 
 const { createFakeContact } = require('../lib/fakeContact');
 async function simageCommand(sock, quotedMessage, chatId) {
