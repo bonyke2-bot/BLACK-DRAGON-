@@ -474,6 +474,24 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     content = { ...content, caption: applyFont(content.caption) };
                 }
 
+                // Global BONY-XMD WhatsApp Channel attribution
+                if (content && typeof content === 'object') {
+                    const existingContextInfo = content.contextInfo || {};
+                    content = {
+                        ...content,
+                        contextInfo: {
+                            ...existingContextInfo,
+                            forwardingScore: 1,
+                            isForwarded: true,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid: '120363430014003120@newsletter',
+                                newsletterName: 'BONY-XMD',
+                                serverMessageId: -1
+                            }
+                        }
+                    };
+                }
+
                 if (content?.image && !content.jpegThumbnail) {
                     try {
                         let imageBuffer;
